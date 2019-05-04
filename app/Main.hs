@@ -5,13 +5,13 @@ import Lib
 import Data.List 
 import Control.Monad hiding (step)
 
-gc = 6.67 / (10^(11)) * 10
+gc = 6.67 / (10^(11)) * 10/10
 moonMass = (7.36*10^22)
 earthMass = (5.97*10^24)
 moonToEarthDist = (384400*10^3)
 moonLinearVelocity = 1023.056
 dt = 86.4*2
-numiterations = 10000
+numiterations = 5*10000
 
 data Vector = Vector Float Float
 Vector x1 y1 |+| Vector x2 y2 = Vector (x1+x2) (y1+y2)
@@ -54,9 +54,8 @@ instance Steppable World where
       where 
         nextobjs = map (step dt) [ x `attractedBy` (delete x objs) | x <- objs ]
         x `attractedBy` objs = case x of 
-          Dynamic nameX massX posX velX -> Dynamic nameX massX newPosX newVelX
+          Dynamic nameX massX posX velX -> Dynamic nameX massX posX newVelX
             where
-              newPosX = posX |+| (dt |*| newVelX)
               newVelX = velX |+| (dt |*| acceleration)
               acceleration = foldl (\prev cur -> prev |+| cur) (Vector 0 0) accelerations
               accelerations = map calcAcceleration $ objs
@@ -88,9 +87,9 @@ instance Eq SpaceObject where
 
 
 
-moon = Dynamic "Moon" moonMass (Vector moonToEarthDist 0) (Vector 0 moonLinearVelocity) 
+moon = Dynamic "Moon" moonMass (Vector moonToEarthDist 0) (Vector -moonLinearVelocity*0.3) moonLinearVelocity) 
 earth = Static "Earth" earthMass (Vector 0 0)
-unknown = Static "Unkown celestial object" (earthMass/2) (Vector (2*moonToEarthDist) 0)
+unknown = Static "Unkown celestial object" (earthMass) (Vector (1.2*moonToEarthDist) (1.2*moonToEarthDist))
 wrld = World 0 [moon, earth, unknown]
 
 -- main = putStrLn . intercalate "\n\n" . map show . take 3 . iterate (step dt) $ wrld
